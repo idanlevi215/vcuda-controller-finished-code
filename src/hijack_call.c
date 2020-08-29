@@ -81,7 +81,7 @@ static void initialization();
 
 //static void rate_limiter(int, int);
 
-static void change_token(int);
+// static void change_token(int);
 
 static const char *nvml_error(nvmlReturn_t);
 
@@ -145,19 +145,19 @@ const char *cuda_error(CUresult code, const char **p) {
   return *p;
 }
 
-static void change_token(int delta) {
-  int cuda_cores_before = 0, cuda_cores_after = 0;
+// static void change_token(int delta) {
+//   int cuda_cores_before = 0, cuda_cores_after = 0;
 
-  LOGGER(5, "delta: %d, curr: %d", delta, g_cur_cuda_cores);
-  do {
-    cuda_cores_before = g_cur_cuda_cores;
-    cuda_cores_after = cuda_cores_before + delta;
+//   LOGGER(5, "delta: %d, curr: %d", delta, g_cur_cuda_cores);
+//   do {
+//     cuda_cores_before = g_cur_cuda_cores;
+//     cuda_cores_after = cuda_cores_before + delta;
 
-    if (unlikely(cuda_cores_after > g_total_cuda_cores)) {
-      cuda_cores_after = g_total_cuda_cores;
-    }
-  } while (!CAS(&g_cur_cuda_cores, cuda_cores_before, cuda_cores_after));
-}
+//     if (unlikely(cuda_cores_after > g_total_cuda_cores)) {
+//       cuda_cores_after = g_total_cuda_cores;
+//     }
+//   } while (!CAS(&g_cur_cuda_cores, cuda_cores_before, cuda_cores_after));
+// }
 
 // static void rate_limiter(int grids, int blocks) {
 //   int before_cuda_cores = 0;
