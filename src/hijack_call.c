@@ -67,19 +67,19 @@ static void register_to_remote();
 
 static void atomic_action(const char *, atomic_fn_ptr, void *);
 
-static void active_utilization_notifier();
+//static void active_utilization_notifier();
 
-static void *utilization_watcher(void *);
+//static void *utilization_watcher(void *);
 
 static void load_pids_table(int, void *);
 
 static void get_used_gpu_memory(int, void *);
 
-static void get_used_gpu_utilization(int, void *);
+// static void get_used_gpu_utilization(int, void *);
 
 static void initialization();
 
-static void rate_limiter(int, int);
+//static void rate_limiter(int, int);
 
 static void change_token(int);
 
@@ -159,210 +159,210 @@ static void change_token(int delta) {
   } while (!CAS(&g_cur_cuda_cores, cuda_cores_before, cuda_cores_after));
 }
 
-static void rate_limiter(int grids, int blocks) {
-  int before_cuda_cores = 0;
-  int after_cuda_cores = 0;
-  int kernel_size = grids;
+// static void rate_limiter(int grids, int blocks) {
+//   int before_cuda_cores = 0;
+//   int after_cuda_cores = 0;
+//   int kernel_size = grids;
 
-  LOGGER(5, "grid: %d, blocks: %d", grids, blocks);
-  LOGGER(5, "launch kernel %d, curr core: %d", kernel_size, g_cur_cuda_cores);
-  if (g_vcuda_config.enable) {
-    do {
-    CHECK:
-      before_cuda_cores = g_cur_cuda_cores;
-      LOGGER(8, "current core: %d", g_cur_cuda_cores);
-      if (before_cuda_cores < 0) {
-        nanosleep(&g_cycle, NULL);
-        goto CHECK;
-      }
-      after_cuda_cores = before_cuda_cores - kernel_size;
-    } while (!CAS(&g_cur_cuda_cores, before_cuda_cores, after_cuda_cores));
-  }
-}
+//   LOGGER(5, "grid: %d, blocks: %d", grids, blocks);
+//   LOGGER(5, "launch kernel %d, curr core: %d", kernel_size, g_cur_cuda_cores);
+//   if (g_vcuda_config.enable) {
+//     do {
+//     CHECK:
+//       before_cuda_cores = g_cur_cuda_cores;
+//       LOGGER(8, "current core: %d", g_cur_cuda_cores);
+//       if (before_cuda_cores < 0) {
+//         nanosleep(&g_cycle, NULL);
+//         goto CHECK;
+//       }
+//       after_cuda_cores = before_cuda_cores - kernel_size;
+//     } while (!CAS(&g_cur_cuda_cores, before_cuda_cores, after_cuda_cores));
+//   }
+// }
 
-int delta(int up_limit, int user_current, int share) {
-  int utilization_diff =
-      abs(up_limit - user_current) < 5 ? 5 : abs(up_limit - user_current);
-  int increment =
-      g_sm_num * g_sm_num * g_max_thread_per_sm * utilization_diff / 2560;
-  /* Accelerate cuda cores allocation when utilization vary widely */
-  if (utilization_diff > up_limit / 2) {
-    increment = increment * utilization_diff * 2 / (up_limit + 1);
-  }
+// int delta(int up_limit, int user_current, int share) {
+//   int utilization_diff =
+//       abs(up_limit - user_current) < 5 ? 5 : abs(up_limit - user_current);
+//   int increment =
+//       g_sm_num * g_sm_num * g_max_thread_per_sm * utilization_diff / 2560;
+//   /* Accelerate cuda cores allocation when utilization vary widely */
+//   if (utilization_diff > up_limit / 2) {
+//     increment = increment * utilization_diff * 2 / (up_limit + 1);
+//   }
 
-  if (user_current <= up_limit) {
-    share = share + increment > g_total_cuda_cores ? g_total_cuda_cores
-                                                   : share + increment;
-  } else {
-    share = share - increment < 0 ? 0 : share - increment;
-  }
+//   if (user_current <= up_limit) {
+//     share = share + increment > g_total_cuda_cores ? g_total_cuda_cores
+//                                                    : share + increment;
+//   } else {
+//     share = share - increment < 0 ? 0 : share - increment;
+//   }
 
-  return share;
-}
+//   return share;
+// }
 
-// #lizard forgives
-static void *utilization_watcher(void *arg UNUSED) {
-  utilization_t top_result = {
-      .user_current = 0,
-      .sys_current = 0,
-      .sys_process_num = 0,
-  };
-  int sys_free = 0;
-  int share = 0;
-  int i = 0;
-  int avg_sys_free = 0;
-  int pre_sys_process_num = 1;
-  int up_limit = g_vcuda_config.utilization;
+// // #lizard forgives
+// static void *utilization_watcher(void *arg UNUSED) {
+//   utilization_t top_result = {
+//       .user_current = 0,
+//       .sys_current = 0,
+//       .sys_process_num = 0,
+//   };
+//   int sys_free = 0;
+//   int share = 0;
+//   int i = 0;
+//   int avg_sys_free = 0;
+//   int pre_sys_process_num = 1;
+//   int up_limit = g_vcuda_config.utilization;
 
-  LOGGER(5, "start %s", __FUNCTION__);
-  LOGGER(4, "sm: %d, thread per sm: %d", g_sm_num, g_max_thread_per_sm);
-  while (1) {
-    nanosleep(&g_wait, NULL);
-    do {
-      atomic_action(pid_path, get_used_gpu_utilization, (void *)&top_result);
-    } while (!top_result.valid);
+//   LOGGER(5, "start %s", __FUNCTION__);
+//   LOGGER(4, "sm: %d, thread per sm: %d", g_sm_num, g_max_thread_per_sm);
+//   while (1) {
+//     nanosleep(&g_wait, NULL);
+//     do {
+//       atomic_action(pid_path, get_used_gpu_utilization, (void *)&top_result);
+//     } while (!top_result.valid);
 
-    sys_free = MAX_UTILIZATION - top_result.sys_current;
+//     sys_free = MAX_UTILIZATION - top_result.sys_current;
 
-    if (g_vcuda_config.hard_limit) {
-      /* Avoid usage jitter when application is initialized*/
-      if (top_result.sys_process_num == 1 &&
-          top_result.user_current < up_limit / 10) {
-        g_cur_cuda_cores =
-            delta(g_vcuda_config.utilization, top_result.user_current, share);
-        continue;
-      }
-      share = delta(g_vcuda_config.utilization, top_result.user_current, share);
-    } else {
-      if (pre_sys_process_num != top_result.sys_process_num) {
-        /* When a new process comes, all processes are reset to initial value*/
-        if (pre_sys_process_num < top_result.sys_process_num) {
-          share = g_max_thread_per_sm;
-          up_limit = g_vcuda_config.utilization;
-          i = 0;
-          avg_sys_free = 0;
-        }
-        pre_sys_process_num = top_result.sys_process_num;
-      }
+//     if (g_vcuda_config.hard_limit) {
+//       /* Avoid usage jitter when application is initialized*/
+//       if (top_result.sys_process_num == 1 &&
+//           top_result.user_current < up_limit / 10) {
+//         g_cur_cuda_cores =
+//             delta(g_vcuda_config.utilization, top_result.user_current, share);
+//         continue;
+//       }
+//       share = delta(g_vcuda_config.utilization, top_result.user_current, share);
+//     } else {
+//       if (pre_sys_process_num != top_result.sys_process_num) {
+//         /* When a new process comes, all processes are reset to initial value*/
+//         if (pre_sys_process_num < top_result.sys_process_num) {
+//           share = g_max_thread_per_sm;
+//           up_limit = g_vcuda_config.utilization;
+//           i = 0;
+//           avg_sys_free = 0;
+//         }
+//         pre_sys_process_num = top_result.sys_process_num;
+//       }
 
-      /* 1.Only one process on the GPU
-       * Allocate cuda cores according to the limit value.
-       *
-       * 2.Multiple processes on the GPU
-       * First, change the up_limit of the process according to the
-       * historical resource utilization. Second, allocate the cuda
-       * cores according to the changed limit value.*/
-      if (top_result.sys_process_num == 1) {
-        share = delta(g_vcuda_config.limit, top_result.user_current, share);
-      } else {
-        i++;
-        avg_sys_free += sys_free;
-        if (i % CHANGE_LIMIT_INTERVAL == 0) {
-          if (avg_sys_free * 2 / CHANGE_LIMIT_INTERVAL > USAGE_THRESHOLD) {
-            up_limit = up_limit + g_vcuda_config.utilization / 10 >
-                               g_vcuda_config.limit
-                           ? g_vcuda_config.limit
-                           : up_limit + g_vcuda_config.utilization / 10;
-          }
-          i = 0;
-        }
-        avg_sys_free = i % (CHANGE_LIMIT_INTERVAL / 2) == 0 ? 0 : avg_sys_free;
-        share = delta(up_limit, top_result.user_current, share);
-      }
-    }
+//       /* 1.Only one process on the GPU
+//        * Allocate cuda cores according to the limit value.
+//        *
+//        * 2.Multiple processes on the GPU
+//        * First, change the up_limit of the process according to the
+//        * historical resource utilization. Second, allocate the cuda
+//        * cores according to the changed limit value.*/
+//       if (top_result.sys_process_num == 1) {
+//         share = delta(g_vcuda_config.limit, top_result.user_current, share);
+//       } else {
+//         i++;
+//         avg_sys_free += sys_free;
+//         if (i % CHANGE_LIMIT_INTERVAL == 0) {
+//           if (avg_sys_free * 2 / CHANGE_LIMIT_INTERVAL > USAGE_THRESHOLD) {
+//             up_limit = up_limit + g_vcuda_config.utilization / 10 >
+//                                g_vcuda_config.limit
+//                            ? g_vcuda_config.limit
+//                            : up_limit + g_vcuda_config.utilization / 10;
+//           }
+//           i = 0;
+//         }
+//         avg_sys_free = i % (CHANGE_LIMIT_INTERVAL / 2) == 0 ? 0 : avg_sys_free;
+//         share = delta(up_limit, top_result.user_current, share);
+//       }
+//     }
 
-    change_token(share);
+//     change_token(share);
 
-    LOGGER(4, "util: %d, up_limit: %d,  share: %d, cur: %d",
-           top_result.user_current, up_limit, share, g_cur_cuda_cores);
-  }
-}
+//     LOGGER(4, "util: %d, up_limit: %d,  share: %d, cur: %d",
+//            top_result.user_current, up_limit, share, g_cur_cuda_cores);
+//   }
+// }
 
-static void active_utilization_notifier() {
-  pthread_t tid;
+// static void active_utilization_notifier() {
+//   pthread_t tid;
 
-  pthread_create(&tid, NULL, utilization_watcher, NULL);
+//   pthread_create(&tid, NULL, utilization_watcher, NULL);
 
-#ifdef __APPLE__
-  pthread_setname_np("utilization_watcher");
-#else
-  pthread_setname_np(tid, "utilization_watcher");
-#endif
-}
+// #ifdef __APPLE__
+//   pthread_setname_np("utilization_watcher");
+// #else
+//   pthread_setname_np(tid, "utilization_watcher");
+// #endif
+// }
+// */
+// static void get_used_gpu_utilization(int fd, void *arg) {
+//   nvmlProcessUtilizationSample_t processes_sample[MAX_PIDS];
+//   int processes_num = MAX_PIDS;
+//   unsigned int running_processes = MAX_PIDS;
+//   nvmlProcessInfo_t pids_on_device[MAX_PIDS];
+//   nvmlDevice_t dev;
+//   utilization_t *top_result = (utilization_t *)arg;
+//   nvmlReturn_t ret;
+//   struct timeval cur;
+//   size_t microsec;
+//   int codec_util = 0;
 
-static void get_used_gpu_utilization(int fd, void *arg) {
-  nvmlProcessUtilizationSample_t processes_sample[MAX_PIDS];
-  int processes_num = MAX_PIDS;
-  unsigned int running_processes = MAX_PIDS;
-  nvmlProcessInfo_t pids_on_device[MAX_PIDS];
-  nvmlDevice_t dev;
-  utilization_t *top_result = (utilization_t *)arg;
-  nvmlReturn_t ret;
-  struct timeval cur;
-  size_t microsec;
-  int codec_util = 0;
+//   int i;
 
-  int i;
+//   NVML_ENTRY_CALL(nvml_library_entry, nvmlInit);
 
-  NVML_ENTRY_CALL(nvml_library_entry, nvmlInit);
+//   ret =
+//       NVML_ENTRY_CALL(nvml_library_entry, nvmlDeviceGetHandleByIndex, 0, &dev);
+//   if (unlikely(ret)) {
+//     LOGGER(4, "nvmlDeviceGetHandleByIndex: %s", nvml_error(ret));
+//     goto DONE;
+//   }
 
-  ret =
-      NVML_ENTRY_CALL(nvml_library_entry, nvmlDeviceGetHandleByIndex, 0, &dev);
-  if (unlikely(ret)) {
-    LOGGER(4, "nvmlDeviceGetHandleByIndex: %s", nvml_error(ret));
-    goto DONE;
-  }
+//   ret =
+//       NVML_ENTRY_CALL(nvml_library_entry, nvmlDeviceGetComputeRunningProcesses,
+//                       dev, &running_processes, pids_on_device);
+//   if (unlikely(ret)) {
+//     LOGGER(4, "nvmlDeviceGetComputeRunningProcesses: %s", nvml_error(ret));
+//     goto DONE;
+//   }
 
-  ret =
-      NVML_ENTRY_CALL(nvml_library_entry, nvmlDeviceGetComputeRunningProcesses,
-                      dev, &running_processes, pids_on_device);
-  if (unlikely(ret)) {
-    LOGGER(4, "nvmlDeviceGetComputeRunningProcesses: %s", nvml_error(ret));
-    goto DONE;
-  }
+//   top_result->sys_process_num = running_processes;
 
-  top_result->sys_process_num = running_processes;
+//   load_pids_table(fd, NULL);
+//   gettimeofday(&cur, NULL);
+//   microsec = (cur.tv_sec - 1) * 1000UL * 1000UL + cur.tv_usec;
+//   top_result->checktime = microsec;
+//   ret = NVML_ENTRY_CALL(nvml_library_entry, nvmlDeviceGetProcessUtilization,
+//                         dev, processes_sample, &processes_num, microsec);
+//   if (unlikely(ret)) {
+//     LOGGER(4, "nvmlDeviceGetProcessUtilization: %s", nvml_error(ret));
+//     goto DONE;
+//   }
 
-  load_pids_table(fd, NULL);
-  gettimeofday(&cur, NULL);
-  microsec = (cur.tv_sec - 1) * 1000UL * 1000UL + cur.tv_usec;
-  top_result->checktime = microsec;
-  ret = NVML_ENTRY_CALL(nvml_library_entry, nvmlDeviceGetProcessUtilization,
-                        dev, processes_sample, &processes_num, microsec);
-  if (unlikely(ret)) {
-    LOGGER(4, "nvmlDeviceGetProcessUtilization: %s", nvml_error(ret));
-    goto DONE;
-  }
+//   top_result->user_current = 0;
+//   top_result->sys_current = 0;
+//   for (i = 0; i < processes_num; i++) {
+//     if (processes_sample[i].timeStamp >= top_result->checktime) {
+//       top_result->valid = 1;
+//       top_result->sys_current += GET_VALID_VALUE(processes_sample[i].smUtil);
 
-  top_result->user_current = 0;
-  top_result->sys_current = 0;
-  for (i = 0; i < processes_num; i++) {
-    if (processes_sample[i].timeStamp >= top_result->checktime) {
-      top_result->valid = 1;
-      top_result->sys_current += GET_VALID_VALUE(processes_sample[i].smUtil);
+//       codec_util = GET_VALID_VALUE(processes_sample[i].encUtil) +
+//                    GET_VALID_VALUE(processes_sample[i].decUtil);
+//       top_result->sys_current += CODEC_NORMALIZE(codec_util);
 
-      codec_util = GET_VALID_VALUE(processes_sample[i].encUtil) +
-                   GET_VALID_VALUE(processes_sample[i].decUtil);
-      top_result->sys_current += CODEC_NORMALIZE(codec_util);
+//       LOGGER(8, "try to find %d from pid tables", processes_sample[i].pid);
+//       if (likely(bsearch(&processes_sample[i].pid, g_pids_table,
+//                          (size_t)g_pids_table_size, sizeof(int), int_match))) {
+//         top_result->user_current += GET_VALID_VALUE(processes_sample[i].smUtil);
 
-      LOGGER(8, "try to find %d from pid tables", processes_sample[i].pid);
-      if (likely(bsearch(&processes_sample[i].pid, g_pids_table,
-                         (size_t)g_pids_table_size, sizeof(int), int_match))) {
-        top_result->user_current += GET_VALID_VALUE(processes_sample[i].smUtil);
+//         codec_util = GET_VALID_VALUE(processes_sample[i].encUtil) +
+//                      GET_VALID_VALUE(processes_sample[i].decUtil);
+//         top_result->user_current += CODEC_NORMALIZE(codec_util);
+//       }
+//     }
+//   }
 
-        codec_util = GET_VALID_VALUE(processes_sample[i].encUtil) +
-                     GET_VALID_VALUE(processes_sample[i].decUtil);
-        top_result->user_current += CODEC_NORMALIZE(codec_util);
-      }
-    }
-  }
+//   LOGGER(5, "sys utilization: %d", top_result->sys_current);
+//   LOGGER(5, "used utilization: %d", top_result->user_current);
 
-  LOGGER(5, "sys utilization: %d", top_result->sys_current);
-  LOGGER(5, "used utilization: %d", top_result->user_current);
-
-DONE:
-  NVML_ENTRY_CALL(nvml_library_entry, nvmlShutdown);
-}
+// DONE:
+//   NVML_ENTRY_CALL(nvml_library_entry, nvmlShutdown);
+// }
 
 static void load_pids_table(int fd, void *arg UNUSED) {
   int item = 0;
