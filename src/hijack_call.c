@@ -498,7 +498,7 @@ static void initialization() {
 
   g_total_cuda_cores = g_max_thread_per_sm * g_sm_num * FACTOR;
   LOGGER(4, "total cuda cores: %d", g_total_cuda_cores);
-  active_utilization_notifier();
+  // active_utilization_notifier();
 }
 
 /** hijack entrypoint */
@@ -860,8 +860,7 @@ CUresult cuLaunchKernel_ptsz(CUfunction f, unsigned int gridDimX,
                              unsigned int blockDimZ,
                              unsigned int sharedMemBytes, CUstream hStream,
                              void **kernelParams, void **extra) {
-  rate_limiter(gridDimX * gridDimY * gridDimZ,
-               blockDimX * blockDimY * blockDimZ);
+  // rate_limiter(gridDimX * gridDimY * gridDimZ, blockDimX * blockDimY * blockDimZ);
 
   return CUDA_ENTRY_CALL(cuda_library_entry, cuLaunchKernel_ptsz, f, gridDimX,
                          gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ,
@@ -873,8 +872,7 @@ CUresult cuLaunchKernel(CUfunction f, unsigned int gridDimX,
                         unsigned int blockDimX, unsigned int blockDimY,
                         unsigned int blockDimZ, unsigned int sharedMemBytes,
                         CUstream hStream, void **kernelParams, void **extra) {
-  rate_limiter(gridDimX * gridDimY * gridDimZ,
-               blockDimX * blockDimY * blockDimZ);
+  // rate_limiter(gridDimX * gridDimY * gridDimZ, blockDimX * blockDimY * blockDimZ);
 
   return CUDA_ENTRY_CALL(cuda_library_entry, cuLaunchKernel, f, gridDimX,
                          gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ,
@@ -882,7 +880,7 @@ CUresult cuLaunchKernel(CUfunction f, unsigned int gridDimX,
 }
 
 CUresult cuLaunch(CUfunction f) {
-  rate_limiter(1, g_block_x * g_block_y * g_block_z);
+  // rate_limiter(1, g_block_x * g_block_y * g_block_z);
   return CUDA_ENTRY_CALL(cuda_library_entry, cuLaunch, f);
 }
 
@@ -891,8 +889,7 @@ CUresult cuLaunchCooperativeKernel_ptsz(
     unsigned int gridDimZ, unsigned int blockDimX, unsigned int blockDimY,
     unsigned int blockDimZ, unsigned int sharedMemBytes, CUstream hStream,
     void **kernelParams) {
-  rate_limiter(gridDimX * gridDimY * gridDimZ,
-               blockDimX * blockDimY * blockDimZ);
+  // rate_limiter(gridDimX * gridDimY * gridDimZ, blockDimX * blockDimY * blockDimZ);
   return CUDA_ENTRY_CALL(cuda_library_entry, cuLaunchCooperativeKernel_ptsz, f,
                          gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY,
                          blockDimZ, sharedMemBytes, hStream, kernelParams);
@@ -905,22 +902,21 @@ CUresult cuLaunchCooperativeKernel(CUfunction f, unsigned int gridDimX,
                                    unsigned int blockDimZ,
                                    unsigned int sharedMemBytes,
                                    CUstream hStream, void **kernelParams) {
-  rate_limiter(gridDimX * gridDimY * gridDimZ,
-               blockDimX * blockDimY * blockDimZ);
+  // rate_limiter(gridDimX * gridDimY * gridDimZ, blockDimX * blockDimY * blockDimZ);
   return CUDA_ENTRY_CALL(cuda_library_entry, cuLaunchCooperativeKernel, f,
                          gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY,
                          blockDimZ, sharedMemBytes, hStream, kernelParams);
 }
 
 CUresult cuLaunchGrid(CUfunction f, int grid_width, int grid_height) {
-  rate_limiter(grid_width * grid_height, g_block_x * g_block_y * g_block_z);
+  // rate_limiter(grid_width * grid_height, g_block_x * g_block_y * g_block_z);
   return CUDA_ENTRY_CALL(cuda_library_entry, cuLaunchGrid, f, grid_width,
                          grid_height);
 }
 
 CUresult cuLaunchGridAsync(CUfunction f, int grid_width, int grid_height,
                            CUstream hStream) {
-  rate_limiter(grid_width * grid_height, g_block_x * g_block_y * g_block_z);
+  // rate_limiter(grid_width * grid_height, g_block_x * g_block_y * g_block_z);
   return CUDA_ENTRY_CALL(cuda_library_entry, cuLaunchGridAsync, f, grid_width,
                          grid_height, hStream);
 }
