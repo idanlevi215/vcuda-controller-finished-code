@@ -62,9 +62,9 @@ void register_to_remote_with_data(const char* bus_id, const char* pod_uid,
                   RPC_ADDR, "--bus-id", bus_id, "--pod-uid", pod_uid,
                   "--cont-name", container, (char*)NULL);
     }
-//    if (unlikely(ret == -1)) {
-//      LOGGER(FATAL, "can't register to manager, error %s", strerror(errno));
-//    }
+    if (unlikely(ret == -1)) {
+      LOGGER(FATAL, "can't register to manager, error %s", strerror(errno));
+    }
 
     close(pipe_fd[0]);
     _exit(EXIT_SUCCESS);

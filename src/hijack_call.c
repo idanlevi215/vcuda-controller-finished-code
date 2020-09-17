@@ -72,7 +72,7 @@ size_t newused = 0;
 /** internal function definition */
 static void register_to_remote();
 
-// static void atomic_action(atomic_fn_ptr, void *);
+ static void atomic_action(atomic_fn_ptr, void *);
 
 //static void active_utilization_notifier();
 
@@ -80,7 +80,7 @@ static void register_to_remote();
 
 // static void load_pids_table(int, void *);
 
-// static void get_used_gpu_memory(void *);
+ static void get_used_gpu_memory(void *);
 
 // static void get_used_gpu_utilization(int, void *);
 
@@ -121,7 +121,7 @@ int int_match(const void *a, const void *b) {
 
   return 0;
 }
-/*
+
 static void atomic_action(atomic_fn_ptr fn_ptr,
                           void *arg) {
   int fd;
@@ -134,7 +134,7 @@ static void atomic_action(atomic_fn_ptr fn_ptr,
 
   close(fd);
 }
-*/
+
 
 const char *nvml_error(nvmlReturn_t code) {
   const char *(*err_fn)(nvmlReturn_t) = NULL;
@@ -298,80 +298,81 @@ const char *cuda_error(CUresult code, const char **p) {
 // #endif
 // }
 // */
-// static void get_used_gpu_utilization(int fd, void *arg) {
-//   nvmlProcessUtilizationSample_t processes_sample[MAX_PIDS];
-//   int processes_num = MAX_PIDS;
-//   unsigned int running_processes = MAX_PIDS;
-//   nvmlProcessInfo_t pids_on_device[MAX_PIDS];
-//   nvmlDevice_t dev;
-//   utilization_t *top_result = (utilization_t *)arg;
-//   nvmlReturn_t ret;
-//   struct timeval cur;
-//   size_t microsec;
-//   int codec_util = 0;
-
-//   int i;
-
-//   NVML_ENTRY_CALL(nvml_library_entry, nvmlInit);
-
-//   ret =
-//       NVML_ENTRY_CALL(nvml_library_entry, nvmlDeviceGetHandleByIndex, 0, &dev);
-//   if (unlikely(ret)) {
-//     LOGGER(4, "nvmlDeviceGetHandleByIndex: %s", nvml_error(ret));
-//     goto DONE;
-//   }
-
-//   ret =
-//       NVML_ENTRY_CALL(nvml_library_entry, nvmlDeviceGetComputeRunningProcesses,
-//                       dev, &running_processes, pids_on_device);
-//   if (unlikely(ret)) {
-//     LOGGER(4, "nvmlDeviceGetComputeRunningProcesses: %s", nvml_error(ret));
-//     goto DONE;
-//   }
-
-//   top_result->sys_process_num = running_processes;
-
-//   load_pids_table(fd, NULL);
-//   gettimeofday(&cur, NULL);
-//   microsec = (cur.tv_sec - 1) * 1000UL * 1000UL + cur.tv_usec;
-//   top_result->checktime = microsec;
-//   ret = NVML_ENTRY_CALL(nvml_library_entry, nvmlDeviceGetProcessUtilization,
-//                         dev, processes_sample, &processes_num, microsec);
-//   if (unlikely(ret)) {
-//     LOGGER(4, "nvmlDeviceGetProcessUtilization: %s", nvml_error(ret));
-//     goto DONE;
-//   }
-
-//   top_result->user_current = 0;
-//   top_result->sys_current = 0;
-//   for (i = 0; i < processes_num; i++) {
-//     if (processes_sample[i].timeStamp >= top_result->checktime) {
-//       top_result->valid = 1;
-//       top_result->sys_current += GET_VALID_VALUE(processes_sample[i].smUtil);
-
-//       codec_util = GET_VALID_VALUE(processes_sample[i].encUtil) +
-//                    GET_VALID_VALUE(processes_sample[i].decUtil);
-//       top_result->sys_current += CODEC_NORMALIZE(codec_util);
-
-//       LOGGER(8, "try to find %d from pid tables", processes_sample[i].pid);
-//       if (likely(bsearch(&processes_sample[i].pid, g_pids_table,
-//                          (size_t)g_pids_table_size, sizeof(int), int_match))) {
-//         top_result->user_current += GET_VALID_VALUE(processes_sample[i].smUtil);
-
-//         codec_util = GET_VALID_VALUE(processes_sample[i].encUtil) +
-//                      GET_VALID_VALUE(processes_sample[i].decUtil);
-//         top_result->user_current += CODEC_NORMALIZE(codec_util);
-//       }
-//     }
-//   }
-
-//   LOGGER(5, "sys utilization: %d", top_result->sys_current);
-//   LOGGER(5, "used utilization: %d", top_result->user_current);
-
-// DONE:
-//   NVML_ENTRY_CALL(nvml_library_entry, nvmlShutdown);
-// }
 /*
+ static void get_used_gpu_utilization(int fd, void *arg) {
+   nvmlProcessUtilizationSample_t processes_sample[MAX_PIDS];
+   int processes_num = MAX_PIDS;
+   unsigned int running_processes = MAX_PIDS;
+   nvmlProcessInfo_t pids_on_device[MAX_PIDS];
+   nvmlDevice_t dev;
+   utilization_t *top_result = (utilization_t *)arg;
+   nvmlReturn_t ret;
+   struct timeval cur;
+   size_t microsec;
+   int codec_util = 0;
+
+   int i;
+
+   NVML_ENTRY_CALL(nvml_library_entry, nvmlInit);
+
+   ret =
+       NVML_ENTRY_CALL(nvml_library_entry, nvmlDeviceGetHandleByIndex, 0, &dev);
+   if (unlikely(ret)) {
+     LOGGER(4, "nvmlDeviceGetHandleByIndex: %s", nvml_error(ret));
+     goto DONE;
+   }
+
+   ret =
+       NVML_ENTRY_CALL(nvml_library_entry, nvmlDeviceGetComputeRunningProcesses,
+                       dev, &running_processes, pids_on_device);
+   if (unlikely(ret)) {
+     LOGGER(4, "nvmlDeviceGetComputeRunningProcesses: %s", nvml_error(ret));
+     goto DONE;
+   }
+
+   top_result->sys_process_num = running_processes;
+
+   load_pids_table(fd, NULL);
+   gettimeofday(&cur, NULL);
+   microsec = (cur.tv_sec - 1) * 1000UL * 1000UL + cur.tv_usec;
+   top_result->checktime = microsec;
+   ret = NVML_ENTRY_CALL(nvml_library_entry, nvmlDeviceGetProcessUtilization,
+                         dev, processes_sample, &processes_num, microsec);
+   if (unlikely(ret)) {
+     LOGGER(4, "nvmlDeviceGetProcessUtilization: %s", nvml_error(ret));
+     goto DONE;
+   }
+
+   top_result->user_current = 0;
+   top_result->sys_current = 0;
+   for (i = 0; i < processes_num; i++) {
+     if (processes_sample[i].timeStamp >= top_result->checktime) {
+       top_result->valid = 1;
+       top_result->sys_current += GET_VALID_VALUE(processes_sample[i].smUtil);
+
+       codec_util = GET_VALID_VALUE(processes_sample[i].encUtil) +
+                    GET_VALID_VALUE(processes_sample[i].decUtil);
+       top_result->sys_current += CODEC_NORMALIZE(codec_util);
+
+       LOGGER(8, "try to find %d from pid tables", processes_sample[i].pid);
+       if (likely(bsearch(&processes_sample[i].pid, g_pids_table,
+                          (size_t)g_pids_table_size, sizeof(int), int_match))) {
+         top_result->user_current += GET_VALID_VALUE(processes_sample[i].smUtil);
+
+         codec_util = GET_VALID_VALUE(processes_sample[i].encUtil) +
+                      GET_VALID_VALUE(processes_sample[i].decUtil);
+         top_result->user_current += CODEC_NORMALIZE(codec_util);
+       }
+     }
+   }
+
+   LOGGER(5, "sys utilization: %d", top_result->sys_current);
+/   LOGGER(5, "used utilization: %d", top_result->user_current);
+
+ DONE:
+   NVML_ENTRY_CALL(nvml_library_entry, nvmlShutdown);
+ }
+*/
 static void load_pids_table(void *arg UNUSED) {
   int item = 0;
   int rsize = 0;
@@ -392,14 +393,8 @@ static void load_pids_table(void *arg UNUSED) {
 
   LOGGER(8, "read %d items from %s", g_pids_table_size, pid_path);
 }
-*/
-/*static void get_used_gpu_memory(void *arg) {
- // int msec = 0 ;
- // clock_t before = clock();
- // LOGGER(2,"start func");
- // LOGGER (2," clock before the run = %g", before);
-  struct timeval tv1,tv2;
-  gettimeofday(&tv1, NULL);
+
+static void get_used_gpu_memory(void *arg) {
 
   size_t *used_memory = arg;
 
@@ -449,30 +444,12 @@ static void load_pids_table(void *arg UNUSED) {
     }
   }
 
- // LOGGER(2, "total used memory: %zu", *used_memory);
- //LOGGER (2,"The same clock %g ", before);
-  gettimeofday(&tv2, NULL);
-  //clock_t dif = clock() - before;
-  //LOGGER (2,"DIF %f", dif);
-  //msec = dif * 1000 / CLOCKS_PER_SEC;
-  //LOGGER (2," time taken %d ", msec);
-  LOGGER(2,"Total time = %f seconds\n",
-         (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
-         (double) (tv2.tv_sec - tv1.tv_sec));
   
 DONE:
-  gettimeofday(&tv1, NULL);
   NVML_ENTRY_CALL(nvml_library_entry, nvmlShutdown);
-  gettimeofday(&tv2, NULL);
-  LOGGER(2,"Total time SHUTDOWN get_used_gpu_memory  = %f seconds\n",
-         (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
-         (double) (tv2.tv_sec - tv1.tv_sec));
-//  LOGGER(2,"MemChange %d",newused);
-//  newused = newused -5 ;
-//  LOGGER(2,"MemChange 2 %d",newused);
   
 }
-*/
+
 // #lizard forgives
 static void register_to_remote() {
   nvmlPciInfo_t pci_info;
@@ -583,7 +560,7 @@ CUresult cuMemAllocManaged(CUdeviceptr *dptr, size_t bytesize,
   size_t request_size = bytesize;
   CUresult ret;
   if (g_vcuda_config.enable) {
-//    atomic_action(get_used_gpu_memory, (void *)&used); 
+    atomic_action(get_used_gpu_memory, (void *)&newused); 
 //    get_used_gpu_memory((void*)&used);
 
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
@@ -608,7 +585,7 @@ CUresult cuMemAlloc_v2(CUdeviceptr *dptr, size_t bytesize, size_t *total) {
   CUresult ret;
 
   if (g_vcuda_config.enable) {
-//    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+    atomic_action(pid_path, get_used_gpu_memory, (void *)&newused);
 //    get_used_gpu_memory((void*)&used);
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
       ret = CUDA_ERROR_OUT_OF_MEMORY;
@@ -630,7 +607,7 @@ CUresult cuMemAlloc(CUdeviceptr *dptr, size_t bytesize) {
   CUresult ret;
 
   if (g_vcuda_config.enable) {
-//    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+    atomic_action(pid_path, get_used_gpu_memory, (void *)&newused);
 //    get_used_gpu_memory((void*)&used);
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
       ret = CUDA_ERROR_OUT_OF_MEMORY;
@@ -676,8 +653,8 @@ CUresult cuMemAllocPitch(CUdeviceptr *dptr, size_t *pPitch, size_t WidthInBytes,
   size_t request_size = ROUND_UP(WidthInBytes * Height, ElementSizeBytes);
   CUresult ret;
 
-  if (g_vcuda_config.enable) {
-//    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+  if (g_vcuda_config.enable) 
+    atomic_action(pid_path, get_used_gpu_memory, (void *)&newused);
 //    get_used_gpu_memory((void*)&used);
 
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
@@ -732,7 +709,7 @@ static CUresult cuArrayCreate_helper(
     request_size = base_size * pAllocateArray->NumChannels *
                    pAllocateArray->Height * pAllocateArray->Width;
 
-//    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+    atomic_action(pid_path, get_used_gpu_memory, (void *)&newused);
 //    get_used_gpu_memory((void*)&used);
 
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
@@ -792,7 +769,7 @@ static CUresult cuArray3DCreate_helper(
     request_size = base_size * pAllocateArray->NumChannels *
                    pAllocateArray->Height * pAllocateArray->Width;
 
-//    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+    atomic_action(pid_path, get_used_gpu_memory, (void *)&newused);
 //    get_used_gpu_memory((void*)&used);
 
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
@@ -850,7 +827,7 @@ CUresult cuMipmappedArrayCreate(
                    pMipmappedArrayDesc->Height * pMipmappedArrayDesc->Width *
                    pMipmappedArrayDesc->Depth;
 
-//    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+    atomic_action(pid_path, get_used_gpu_memory, (void *)&newused);
 //    get_used_gpu_memory((void*)&used);
 
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
@@ -894,7 +871,7 @@ CUresult cuMemGetInfo_v2(size_t *free, size_t *total) {
 //  size_t used = 0;
 
   if (g_vcuda_config.enable) {
-//    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+    atomic_action(pid_path, get_used_gpu_memory, (void *)&newused);
 //    get_used_gpu_memory((void*)&used);
 
     *total = g_vcuda_config.gpu_memory;
@@ -910,7 +887,7 @@ CUresult cuMemGetInfo_v2(size_t *free, size_t *total) {
 CUresult cuMemGetInfo(size_t *free, size_t *total) {
 //  size_t used = 0;
   if (g_vcuda_config.enable) {
-//    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+    atomic_action(pid_path, get_used_gpu_memory, (void *)&newused);
 //    get_used_gpu_memory((void*)&used);
 
     *total = g_vcuda_config.gpu_memory;
