@@ -1,0 +1,1 @@
+/bin/cc -fPIC -O2 -DNDEBUG  -shared -Wl,-soname,libcuda-control.so -o libcuda-control.so CMakeFiles/cuda-control.dir/src/hijack_call.c.o CMakeFiles/cuda-control.dir/src/cuda_originals.c.o CMakeFiles/cuda-control.dir/src/nvml_entry.c.o CMakeFiles/cuda-control.dir/src/loader.c.o CMakeFiles/cuda-control.dir/src/register.c.o  -static-libgcc -static-libstdc++ 

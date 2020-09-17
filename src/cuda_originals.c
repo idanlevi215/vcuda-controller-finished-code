@@ -222,20 +222,24 @@ CUresult cuLinkComplete(CUlinkState state, void **cubinOut, size_t *sizeOut) {
 CUresult cuLinkDestroy(CUlinkState state) {
   return CUDA_ENTRY_CALL(cuda_library_entry, cuLinkDestroy, state);
 }
-
+/*
 CUresult cuMemFree_v2(CUdeviceptr dptr) {
+  LOGGER(2,"FREE_V2 HERE");
   return CUDA_ENTRY_CALL(cuda_library_entry, cuMemFree_v2, dptr);
 }
 
 CUresult cuMemFree(CUdeviceptr dptr) {
+  LOGGER(2,"FREE HERE")
   return CUDA_ENTRY_CALL(cuda_library_entry, cuMemFree, dptr);
 }
+*/
 
 CUresult cuMemGetAddressRange_v2(CUdeviceptr *pbase, size_t *psize,
                                  CUdeviceptr dptr) {
   return CUDA_ENTRY_CALL(cuda_library_entry, cuMemGetAddressRange_v2, pbase,
                          psize, dptr);
 }
+
 
 CUresult cuMemGetAddressRange(CUdeviceptr *pbase, size_t *psize,
                               CUdeviceptr dptr) {

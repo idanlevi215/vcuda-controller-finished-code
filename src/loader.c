@@ -788,24 +788,25 @@ static void load_driver_libraries() {
 }
 
 static void load_cuda_single_library(int idx) {
+
+  LOGGER(4,"entered to lcoa_cuda_single");
   void *table = NULL;
   char cuda_filename[FILENAME_MAX];
-
   snprintf(cuda_filename, FILENAME_MAX - 1, "%s.%s", CUDA_LIBRARY_PREFIX,
            driver_version);
   cuda_filename[FILENAME_MAX - 1] = '\0';
-
+  LOGGER(4,"%s cuda_fil name", cuda_filename);
   table = dlopen(cuda_filename, RTLD_NOW | RTLD_NODELETE);
+//    table = "/usr/lib64/libcuda.so";
   if (unlikely(!table)) {
     LOGGER(FATAL, "can't find library %s", cuda_filename);
-  }
-
+      }
+  
   cuda_library_entry[idx].fn_ptr = dlsym(table, cuda_library_entry[idx].name);
   if (unlikely(!cuda_library_entry[idx].fn_ptr)) {
     LOGGER(4, "can't find function %s in %s", cuda_filename,
            cuda_library_entry[idx].name);
   }
-
   dlclose(table);
 }
 
@@ -969,49 +970,49 @@ DONE:
   return ret;
 }
 
-static int get_path_by_cgroup(const char *pid_cgroup) {
-  int ret = 1;
-  char pod_uid[4096], container_id[4096];
+//static int get_path_by_cgroup(const char *pid_cgroup) {
+//  int ret = 1;
+//  char pod_uid[4096], container_id[4096];
 
-  if (is_custom_config_path()) {
-    return 0;
-  }
+//  if (is_custom_config_path()) {
+//    return 0;
+//  }
 
-  if (unlikely(get_cgroup_data(pid_cgroup, pod_uid, container_id,
-                               sizeof(container_id)))) {
-    LOGGER(4, "can't find container id from %s", pid_cgroup);
-    goto DONE;
-  }
+//  if (unlikely(get_cgroup_data(pid_cgroup, pod_uid, container_id,
+//                               sizeof(container_id)))) {
+//    LOGGER(4, "can't find container id from %s", pid_cgroup);
+//    goto DONE;
+//  }
 
-  snprintf(base_dir, sizeof(base_dir), "%s%s", VCUDA_CONFIG_PATH, container_id);
-  snprintf(config_path, sizeof(config_path), "%s/%s", base_dir,
-           CONTROLLER_CONFIG_NAME);
-  snprintf(pid_path, sizeof(pid_path), "%s/%s", base_dir, PIDS_CONFIG_NAME);
+//  snprintf(base_dir, sizeof(base_dir), "%s%s", VCUDA_CONFIG_PATH, container_id);
+//  snprintf(config_path, sizeof(config_path), "%s/%s", base_dir,
+//           CONTROLLER_CONFIG_NAME);
+//  snprintf(pid_path, sizeof(pid_path), "%s/%s", base_dir, PIDS_CONFIG_NAME);
 
-  LOGGER(4, "config file: %s", config_path);
-  LOGGER(4, "pid file: %s", pid_path);
-  ret = 0;
+//  LOGGER(4, "config file: %s", config_path);
+//  LOGGER(4, "pid file: %s", pid_path);
+//  ret = 0;
 
-  LOGGER(4, "register to remote: pod uid: %s, cont id: %s", pod_uid,
-         container_id);
-  register_to_remote_with_data("", pod_uid, container_id);
-DONE:
-  return ret;
-}
+//  LOGGER(4, "register to remote: pod uid: %s, cont id: %s", pod_uid,
+//         container_id);
+//  register_to_remote_with_data("", pod_uid, container_id);
+//DONE:
+//  return ret;
+//}
 
-static int is_default_config_path() {
-  int fd = -1;
+//static int is_default_config_path() {
+//  int fd = -1;
 
-  fd = open(config_path, O_RDONLY);
-  if (fd == -1) {
-    return 0;
+//  fd = open(config_path, O_RDONLY);
+//  if (fd == -1) {
+/*    return 0;
   }
 
   close(fd);
 
-  return 1;
+  return 1;}
 }
-
+*/
 static void matchRegex(const char *pattern, const char *matchString,
                        char *version) {
   regex_t regex;
@@ -1065,20 +1066,24 @@ static void read_version_from_proc(char *version) {
 }
 
 int read_controller_configuration() {
-  int fd = 0;
-  int rsize;
-  int ret = 1;
+  
 
+//  int fd = 0;
+  int ret = 1;
+/*
   if (!is_default_config_path()) {
     if (get_path_by_cgroup("/proc/self/cgroup")) {
       LOGGER(FATAL, "can't get config file path");
     }
   }
 
+  goto DONE;
+
   fd = open(config_path, O_RDONLY);
   if (unlikely(fd == -1)) {
     LOGGER(4, "can't open %s, error %s", config_path, strerror(errno));
     goto DONE;
+
   }
 
   rsize = (int) read(fd, (void *) &g_vcuda_config, sizeof(resource_data_t));
@@ -1087,10 +1092,10 @@ int read_controller_configuration() {
            sizeof(resource_data_t), rsize);
     goto DONE;
   }
-
+*/
+  g_vcuda_config.gpu_memory = 100000000000; 
   read_version_from_proc(driver_version);
   ret = 0;
-
   LOGGER(4, "pod uid          : %s", g_vcuda_config.pod_uid);
   LOGGER(4, "limit            : %d", g_vcuda_config.limit);
   LOGGER(4, "container name   : %s", g_vcuda_config.container_name);
@@ -1099,10 +1104,9 @@ int read_controller_configuration() {
   LOGGER(4, "driver version   : %s", driver_version);
   LOGGER(4, "hard limit mode  : %d", g_vcuda_config.hard_limit);
   LOGGER(4, "enable mode      : %d", g_vcuda_config.enable);
-DONE:
-  if (likely(fd)) {
-    close(fd);
-  }
+//  if (likely(fd)) {
+//    close(fd);
+//  }
 
   return ret;
 }

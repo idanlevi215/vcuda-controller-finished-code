@@ -1,0 +1,4 @@
+/home/idan/vcuda-controller/CMakeFiles/rebuild_cache.dir
+/home/idan/vcuda-controller/CMakeFiles/nvml-monitor.dir
+/home/idan/vcuda-controller/CMakeFiles/edit_cache.dir
+/home/idan/vcuda-controller/CMakeFiles/cuda-control.dir

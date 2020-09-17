@@ -189,4 +189,5 @@ int main(void) {
 
   NVML_ENTRY_CALL(nvml_library_entry, nvmlShutdown);
   close(fd);
+  return 1;
 }

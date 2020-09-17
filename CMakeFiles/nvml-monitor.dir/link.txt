@@ -1,0 +1,1 @@
+/bin/cc -O2 -DNDEBUG   CMakeFiles/nvml-monitor.dir/tools/monitor_dockernized.c.o CMakeFiles/nvml-monitor.dir/src/loader.c.o CMakeFiles/nvml-monitor.dir/src/register.c.o  -o nvml-monitor  -static-libgcc -static-libstdc++ -ldl -lpthread 
