@@ -373,6 +373,7 @@ const char *cuda_error(CUresult code, const char **p) {
    NVML_ENTRY_CALL(nvml_library_entry, nvmlShutdown);
  }
 */
+/*
 static void load_pids_table(void *arg UNUSED) {
   int item = 0;
   int rsize = 0;
@@ -393,7 +394,8 @@ static void load_pids_table(void *arg UNUSED) {
 
   LOGGER(8, "read %d items from %s", g_pids_table_size, pid_path);
 }
-
+*/
+/*
 static void get_used_gpu_memory(void *arg) {
 
   size_t *used_memory = arg;
@@ -443,7 +445,7 @@ static void get_used_gpu_memory(void *arg) {
       *used_memory += pids_on_device[i].usedGpuMemory;
     }
   }
-
+*/
   
 DONE:
   NVML_ENTRY_CALL(nvml_library_entry, nvmlShutdown);
