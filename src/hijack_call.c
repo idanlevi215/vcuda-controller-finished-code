@@ -72,7 +72,7 @@ size_t newused = 0;
 /** internal function definition */
 static void register_to_remote();
 
- static void atomic_action(atomic_fn_ptr, void *);
+ //static void atomic_action(atomic_fn_ptr, void *);
 
 //static void active_utilization_notifier();
 
@@ -80,7 +80,7 @@ static void register_to_remote();
 
 // static void load_pids_table(int, void *);
 
- static void get_used_gpu_memory(void *);
+// static void get_used_gpu_memory(void *);
 
 // static void get_used_gpu_utilization(int, void *);
 
@@ -121,7 +121,7 @@ int int_match(const void *a, const void *b) {
 
   return 0;
 }
-
+/*
 static void atomic_action(atomic_fn_ptr fn_ptr,
                           void *arg) {
   int fd;
@@ -134,7 +134,7 @@ static void atomic_action(atomic_fn_ptr fn_ptr,
 
   close(fd);
 }
-
+*/
 
 const char *nvml_error(nvmlReturn_t code) {
   const char *(*err_fn)(nvmlReturn_t) = NULL;
@@ -560,7 +560,7 @@ CUresult cuMemAllocManaged(CUdeviceptr *dptr, size_t bytesize,
   size_t request_size = bytesize;
   CUresult ret;
   if (g_vcuda_config.enable) {
-    atomic_action(get_used_gpu_memory, (void *)&used); 
+ //   atomic_action(get_used_gpu_memory, (void *)&used); 
 //    get_used_gpu_memory((void*)&used);
 
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
@@ -585,7 +585,7 @@ CUresult cuMemAlloc_v2(CUdeviceptr *dptr, size_t bytesize, size_t *total) {
   CUresult ret;
 
   if (g_vcuda_config.enable) {
-    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+ //   atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
 //    get_used_gpu_memory((void*)&used);
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
       ret = CUDA_ERROR_OUT_OF_MEMORY;
@@ -602,12 +602,12 @@ DONE:
 }
 
 CUresult cuMemAlloc(CUdeviceptr *dptr, size_t bytesize) {
-  size_t used = 0;
+  //size_t used = 0;
   size_t request_size = bytesize;
   CUresult ret;
 
   if (g_vcuda_config.enable) {
-    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+   // atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
 //    get_used_gpu_memory((void*)&used);
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
       ret = CUDA_ERROR_OUT_OF_MEMORY;
@@ -626,7 +626,7 @@ DONE:
 CUresult cuMemAllocPitch_v2(CUdeviceptr *dptr, size_t *pPitch,
                             size_t WidthInBytes, size_t Height,
                             unsigned int ElementSizeBytes) {
-  size_t used = 0;
+// size_t used = 0;
   size_t request_size = ROUND_UP(WidthInBytes * Height, ElementSizeBytes);
   CUresult ret;
 
@@ -654,7 +654,7 @@ CUresult cuMemAllocPitch(CUdeviceptr *dptr, size_t *pPitch, size_t WidthInBytes,
   CUresult ret;
 
   if (g_vcuda_config.enable) 
-    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+//    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
 //    get_used_gpu_memory((void*)&used);
 
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
@@ -699,7 +699,7 @@ static size_t get_array_base_size(int format) {
 
 static CUresult cuArrayCreate_helper(
     const CUDA_ARRAY_DESCRIPTOR *pAllocateArray) {
-  size_t used = 0;
+// size_t used = 0;
   size_t base_size = 0;
   size_t request_size = 0;
   CUresult ret = CUDA_SUCCESS;
@@ -709,7 +709,7 @@ static CUresult cuArrayCreate_helper(
     request_size = base_size * pAllocateArray->NumChannels *
                    pAllocateArray->Height * pAllocateArray->Width;
 
-    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+ //   atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
 //    get_used_gpu_memory((void*)&used);
 
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
@@ -759,7 +759,7 @@ DONE:
 
 static CUresult cuArray3DCreate_helper(
     const CUDA_ARRAY3D_DESCRIPTOR *pAllocateArray) {
-  size_t used = 0;
+  //size_t used = 0;
   size_t base_size = 0;
   size_t request_size = 0;
   CUresult ret = CUDA_SUCCESS;
@@ -769,7 +769,7 @@ static CUresult cuArray3DCreate_helper(
     request_size = base_size * pAllocateArray->NumChannels *
                    pAllocateArray->Height * pAllocateArray->Width;
 
-    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+    //atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
 //    get_used_gpu_memory((void*)&used);
 
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
@@ -816,7 +816,7 @@ CUresult cuMipmappedArrayCreate(
     CUmipmappedArray *pHandle,
     const CUDA_ARRAY3D_DESCRIPTOR *pMipmappedArrayDesc,
     unsigned int numMipmapLevels) {
-  size_t used = 0;
+  //size_t used = 0;
   size_t base_size = 0;
   size_t request_size = 0;
   CUresult ret;
@@ -827,7 +827,7 @@ CUresult cuMipmappedArrayCreate(
                    pMipmappedArrayDesc->Height * pMipmappedArrayDesc->Width *
                    pMipmappedArrayDesc->Depth;
 
-    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+//    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
 //    get_used_gpu_memory((void*)&used);
 
     if (unlikely(newused + request_size > g_vcuda_config.gpu_memory)) {
@@ -846,14 +846,14 @@ DONE:
 }
 
 CUresult cuDeviceTotalMem_v2(size_t *bytes, CUdevice dev) {
-  size_t used = 0;
+ // size_t used = 0;
   if (g_vcuda_config.enable) {
     *bytes = g_vcuda_config.gpu_memory;
 
     return CUDA_SUCCESS;
   }
 //    get_used_gpu_memory((void*)&used);
-  atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+ // atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
   return CUDA_ENTRY_CALL(cuda_library_entry, cuDeviceTotalMem_v2, bytes, dev);
 }
 
@@ -868,10 +868,10 @@ CUresult cuDeviceTotalMem(size_t *bytes, CUdevice dev) {
 }
 
 CUresult cuMemGetInfo_v2(size_t *free, size_t *total) {
-  size_t used = 0;
+//  size_t used = 0;
 
   if (g_vcuda_config.enable) {
-    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
+ //   atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
 //    get_used_gpu_memory((void*)&used);
 
     *total = g_vcuda_config.gpu_memory;
@@ -885,10 +885,10 @@ CUresult cuMemGetInfo_v2(size_t *free, size_t *total) {
 }
 
 CUresult cuMemGetInfo(size_t *free, size_t *total) {
-  size_t used = 0;
+ // size_t used = 0;
   if (g_vcuda_config.enable) {
-    atomic_action(pid_path, get_used_gpu_memory, (void *)&used);
-//    get_used_gpu_memory((void*)&used);
+//    atomic_action(pid_path, F_gpu_memory, (void *)&used);
+//    ((void*)&used);
 
     *total = g_vcuda_config.gpu_memory;
     *free =
