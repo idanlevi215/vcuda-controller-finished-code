@@ -1077,8 +1077,6 @@ int read_controller_configuration() {
     }
   }
 
-  goto DONE;
-
   fd = open(config_path, O_RDONLY);
   if (unlikely(fd == -1)) {
     LOGGER(4, "can't open %s, error %s", config_path, strerror(errno));
@@ -1111,10 +1109,9 @@ DONE:
   return ret;
 }
 
-void load_necessary_data() {
+void load_necessary_data {
   read_controller_configuration();
   load_cuda_single_library(CUDA_ENTRY_ENUM(cuDriverGetVersion));
-
   pthread_once(&g_cuda_set, load_cuda_libraries);
   pthread_once(&g_driver_set, load_driver_libraries);
 }
