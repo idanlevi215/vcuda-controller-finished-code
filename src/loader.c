@@ -1111,8 +1111,7 @@ DONE:
   return ret;
 }
 
-void load_necessary_data() 
-{
+void load_necessary_data() {
   read_controller_configuration();
   load_cuda_single_library(CUDA_ENTRY_ENUM(cuDriverGetVersion));
 
