@@ -1111,12 +1111,9 @@ DONE:
 
 void load_necessary_data() {
   read_controller_configuration();
-
-
-
   load_cuda_single_library(CUDA_ENTRY_ENUM(cuDriverGetVersion));
   pthread_once(&g_cuda_set, load_cuda_libraries);
   pthread_once(&g_driver_set, load_driver_libraries);
-}
+};
 
 int is_custom_config_path() { return strcmp(base_dir, EMPTY_PREFIX) != 0; };
