@@ -1011,7 +1011,7 @@ static int is_default_config_path() {
   close(fd);
 
   return 1;}
-}
+
 
 static void matchRegex(const char *pattern, const char *matchString,
                        char *version) {
