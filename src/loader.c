@@ -1103,6 +1103,7 @@ int read_controller_configuration() {
   LOGGER(4, "driver version   : %s", driver_version);
   LOGGER(4, "hard limit mode  : %d", g_vcuda_config.hard_limit);
   LOGGER(4, "enable mode      : %d", g_vcuda_config.enable);
+DONE:
   if (likely(fd)) {
     close(fd);
   }
