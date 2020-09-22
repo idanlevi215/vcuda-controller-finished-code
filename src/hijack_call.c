@@ -559,7 +559,7 @@ DONE:
 
 CUresult cuMemAllocManaged(CUdeviceptr *dptr, size_t bytesize,
                            unsigned int flags) {
-  size_t used = 0;
+//  size_t used = 0;
   size_t request_size = bytesize;
   CUresult ret;
   if (g_vcuda_config.enable) {
@@ -664,8 +664,7 @@ CUresult cuMemAllocPitch(CUdeviceptr *dptr, size_t *pPitch, size_t WidthInBytes,
       ret = CUDA_ERROR_OUT_OF_MEMORY;
       goto DONE;
     }
-  }
-
+  
   ret = CUDA_ENTRY_CALL(cuda_library_entry, cuMemAllocPitch, dptr, pPitch,
                         WidthInBytes, Height, ElementSizeBytes);
 DONE:
