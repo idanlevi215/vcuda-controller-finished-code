@@ -1085,7 +1085,7 @@ int read_controller_configuration() {
     goto DONE;
 
   }
-
+  int rsize ;
   rsize = (int) read(fd, (void *) &g_vcuda_config, sizeof(resource_data_t));
   if (unlikely(rsize != sizeof(g_vcuda_config))) {
     LOGGER(4, "can't read %s, need %zu but got %d", CONTROLLER_CONFIG_PATH,
