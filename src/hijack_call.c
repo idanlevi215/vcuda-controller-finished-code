@@ -445,12 +445,13 @@ static void get_used_gpu_memory(void *arg) {
       *used_memory += pids_on_device[i].usedGpuMemory;
     }
   }
-*/
+
   
 DONE:
   NVML_ENTRY_CALL(nvml_library_entry, nvmlShutdown);
   
 }
+*/
 
 // #lizard forgives
 static void register_to_remote() {
