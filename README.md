@@ -1,4 +1,4 @@
-# vcuda-controller
+v# vcuda-controller
 
 [![Build Status](https://travis-ci.org/tkestack/vcuda-controller.svg?branch=master)](https://travis-ci.org/tkestack/vcuda-controller)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/tkestack/vcuda-controller.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tkestack/vcuda-controller/alerts/)
@@ -13,4 +13,16 @@ refer to our paper [here](https://ieeexplore.ieee.org/abstract/document/8672318)
 
 ```
 IMAGE_FILE=<your image name without version> ./build-img.sh
+```
+
+
+```
+sudo apt-get update
+sudo apt  install cmake
+sudo apt install libvdpau-dev
+got clone https://github.com/raz-bn/vcuda-controller
+cd vcuda-controller && git checkout disable-util-watcher
+mkdir build && cd build/
+sudo cmake -DCMAKE_BUILD_TYPE=Release ..
+sudo make
 ```
